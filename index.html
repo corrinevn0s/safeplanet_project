@@ -169,7 +169,6 @@ footer{
 </footer>
 
 <script type="module">
-
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
 
@@ -179,110 +178,61 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4f8f4);
 
 const camera = new THREE.PerspectiveCamera(
-45,
-container.clientWidth / container.clientHeight,
-0.1,
-1000
+    45,
+    container.clientWidth / container.clientHeight,
+    0.1,
+    1000
 );
+camera.position.set(0, 3, 8);
 
-camera.position.set(0,3,8);
-
-const renderer = new THREE.WebGLRenderer({
-antialias:true
-});
-
-renderer.setSize(
-container.clientWidth,
-container.clientHeight
-);
-
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
 container.appendChild(renderer.domElement);
 
-const ambientLight = new THREE.AmbientLight(
-0xffffff,
-3
-);
-
+// Освещение
+const ambientLight = new THREE.AmbientLight(0xffffff, 3);
 scene.add(ambientLight);
 
-const directionalLight =
-new THREE.DirectionalLight(
-0xffffff,
-2
-);
-
-directionalLight.position.set(5,10,5);
-
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+directionalLight.position.set(5, 10, 5);
 scene.add(directionalLight);
 
+// ЗАГРУЗКА МОДЕЛИ
 const loader = new GLTFLoader();
 
-/*
-ПОЛОЖИ ФАЙЛ tree.glb
-РЯДОМ С index.html
-*/
+// 🔥 ГЛАВНОЕ ИЗМЕНЕНИЕ: используем полный URL
+const modelPath = new URL('tree.glb', import.meta.url).href;
+console.log('Загружаю модель по адресу:', modelPath);
 
 loader.load(
-'tree.glb',
-
-function(gltf){
-
-const tree = gltf.scene;
-
-tree.scale.set(
-2,
-2,
-2
+    modelPath, // ← теперь полный URL
+    function(gltf) {
+        console.log('✅ Модель успешно загружена!');
+        const tree = gltf.scene;
+        tree.scale.set(2, 2, 2);
+        scene.add(tree);
+    },
+    function(xhr) {
+        // Прогресс загрузки
+        console.log('Загружено: ' + (xhr.loaded / xhr.total * 100) + '%');
+    },
+    function(error) {
+        console.error('❌ Ошибка загрузки модели:', error);
+        console.log('Проверьте, что файл tree.glb лежит в корне репозитория');
+    }
 );
 
-scene.add(tree);
-
-},
-
-undefined,
-
-function(error){
-
-console.log(
-'Файл tree.glb не найден'
-);
-
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
 }
-);
-
-function animate(){
-
-requestAnimationFrame(
-animate
-);
-
-renderer.render(
-scene,
-camera
-);
-
-}
-
 animate();
 
-window.addEventListener(
-'resize',
-() => {
-
-camera.aspect =
-container.clientWidth /
-container.clientHeight;
-
-camera.updateProjectionMatrix();
-
-renderer.setSize(
-container.clientWidth,
-container.clientHeight
-);
-
-}
-);
-
+window.addEventListener('resize', () => {
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+});
 </script>
 
 </body>
